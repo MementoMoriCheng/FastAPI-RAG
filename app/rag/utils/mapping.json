@@ -1,0 +1,50 @@
+{
+  "settings": {
+    "index": {
+      "number_of_shards": 2,
+      "number_of_replicas": 0,
+      "refresh_interval": "1000ms"
+    },
+    "similarity": {
+      "scripted_sim": {
+        "type": "scripted",
+        "script": {
+          "source": "double idf = Math.log(1 + (field.docCount - term.docFreq + 0.5) / (term.docFreq + 0.5)) / Math.log(1 + ((field.docCount - 0.5) / 1.5)); return query.boost * idf * Math.min(doc.freq, 1);"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "dynamic": "true",
+    "date_detection": true,
+    "properties": {
+      "lat_lon": {
+        "type": "geo_point",
+        "store": true
+      }
+    },
+    "dynamic_templates": [
+      {
+        "tks_fields": {
+          "match": "*_tks",
+          "mapping": {
+            "type": "text",
+            "analyzer": "whitespace",
+            "similarity": "scripted_sim",
+            "store": true
+          }
+        }
+      },
+      {
+        "ltks_fields": {
+          "match": "*_ltks",
+          "mapping": {
+            "type": "text",
+            "analyzer": "whitespace",
+            "store": true
+          }
+        }
+      }
+    ]
+  }
+}
